@@ -11,8 +11,8 @@ services:
       - DZ_PASSWORD_FILE=/run/secrets/server_password
       - DZ_PASSWORD_ADMIN_FILE=/run/secrets/admin_password
     volumes:
-      - data:/dayz/server
-      # - ./config/serverDZ.docker.cfg:/dayz/server/serverDZ.cfg
+      - data:/server
+      # - ./config/serverDZ.docker.cfg:/server/serverDZ.cfg
     ports:
       - 2302:2302/udp
       - 2303:2303/udp

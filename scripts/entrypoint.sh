@@ -2,22 +2,19 @@
 
 set -e
 
-STEAM_USER=${STEAM_USER:-}
-STEAM_PASS=${STEAM_PASS:-}
-STEAM_CODE=${STEAM_CODE:-}
-STEAM_PASS_FILE=${STEAM_PASS_FILE:-}
-DZ_MISSION=${DZ_MISSION:-dayzOffline.chernarusplus}
+: ${STEAM_PASS:=}
+: ${DZ_MISSION:=dayzOffline.chernarusplus}
 
 DZ_CONFIG=serverDZ.current.cfg
 DZ_TMPL_CONFIG=serverDZ.tmpl.cfg
 DZ_STG_CONFIG=serverDZ.stg.cfg
 
-if [ -z "$STEAM_USER" ]; then
+if [ -z "${STEAM_USER}" ]; then
     echo -e "\n\n[ERROR] Missing required STEAM_USER environment variable"
     exit 78
 fi
 
-if [ -z "$STEAM_PASS" ] && [ -z "$STEAM_PASS_FILE" ]; then
+if [ -z "${STEAM_PASS}" ] && [ -z "${STEAM_PASS_FILE}" ]; then
     echo -e "\n\n[ERROR] Missing required STEAM_PASS or STEAM_PASS_FILE environment variable"
     exit 78
 fi
@@ -31,7 +28,7 @@ function update() {
 
     steamcmd \
         +force_install_dir $SERVER_DIR \
-        +login "$STEAM_USER" "$STEAM_PASS" "$STEAM_CODE" \
+        +login "${STEAM_USER}" "${STEAM_PASS}" "${STEAM_CODE}" \
         +app_update 223350 \
         $STEAM_EXTRA_ARGS \
         +quit
@@ -58,14 +55,14 @@ function update() {
         fi
 
         echo -e "Extracing ${DZ_MISSION} mission files..."
-        tar -xzvf missions.tar.gz --strip-components=1 --wildcards "*/${DZ_MISSION}/*"
+        tar -xzf missions.tar.gz --strip-components=1 --wildcards "*/${DZ_MISSION}/*"
         rm -f missions.tar.gz
+        echo -e "Installed ${DZ_MISSION} mission files"
     fi
 }
 
 function configure() {
     cd $SERVER_DIR
-    # TODO: Currently the volume mount directly to the file is root:root permission and cannot override the permissions.
     if grep -q "serverDZ.cfg" /proc/mounts; then
         echo -e "\n[WARNING] serverDZ.cfg was mounted to the container."
         echo -e "\tEnvironment variables with DZ_* will no longer configure the server.\n"
@@ -74,16 +71,28 @@ function configure() {
         return 0
     fi
 
+    echo -e "Configuring DayZ Server"
+
     local SERVER_NAME=${DZ_NAME:-}
     local SERVER_PASSWORD=${DZ_PASSWORD:-}
     local SERVER_ADMIN_PASSWORD=${DZ_PASSWORD_ADMIN:-}
 
     if [ -n "$DZ_PASSWORD_FILE" ]; then
-        SERVER_PASSWORD=$(cat $DZ_PASSWORD_FILE)
+        if [ -s "$DZ_PASSWORD_FILE" ]; then
+            SERVER_PASSWORD=$(cat $DZ_PASSWORD_FILE)
+        else
+            echo -e "\n[ERROR] DZ_PASSWORD_FILE was supplied but does not exist on disk or is currently empty"
+            return 1
+        fi
     fi
 
     if [ -n "$DZ_PASSWORD_ADMIN_FILE" ]; then
-        SERVER_ADMIN_PASSWORD=$(cat $DZ_PASSWORD_ADMIN_FILE)
+        if [ -s "$DZ_PASSWORD_ADMIN_FILE" ]; then
+            SERVER_ADMIN_PASSWORD=$(cat $DZ_PASSWORD_ADMIN_FILE)
+        else
+            echo -e "\n[ERROR] DZ_PASSWORD_ADMIN_FILE was supplied but does not exist on disk or is currently empty"
+            return 1
+        fi
     fi
 
     sed -e "s/{{SERVER_NAME}}/${SERVER_NAME//&/\\&}/g" \
@@ -107,32 +116,44 @@ function configure() {
         -e "s/{{STORAGE_AUTOFIX}}/${DZ_STORAGE_AUTOFIX:-1}/g" \
         -e "s/{{SERVER_MISSION}}/${DZ_MISSION//&/\\&}/g" \
         $DZ_TMPL_CONFIG > $DZ_STG_CONFIG
-
-
-    # if grep -q "{{.*}}" serverDZ.cfg; then
-    #     echo "Found Template in File"
-    # fi
 }
 
-# function getMap() {
-#     mkdir -p /tmp/mpmissions
-    
-#     curl -sL https://github.com/BohemiaInteractive/DayZ-Central-Economy/archive/refs/tags/DZ_126.tar.gz \
-#         | pv --name "Downloading" >> /tmp/mpmissions/download.tar.gz
+prep_term()
+{
+    unset term_child_pid
+    unset term_kill_needed
+    trap 'handle_term' TERM INT
+}
 
-#     pv --name "Extracting" /tmp/mpmissions/download.tar.gz \
-#         | tar --strip-components=1 -xz -C /tmp/mpmissions
+handle_term()
+{
+    if [ "${term_child_pid}" ]; then
+        echo -e "Gracefully shutting down"
+        kill -TERM "${term_child_pid}" 2>/dev/null
+    else
+        term_kill_needed="yes"
+    fi
+}
 
-#     mv /tmp/mpmissions/${DZ_MISSION} ${MISSION_DIR}
-#     rm -rf /tmp/mpmissions
-# }
+wait_term()
+{
+    term_child_pid=$!
+    if [ "${term_kill_needed}" ]; then
+        kill -TERM "${term_child_pid}" 2>/dev/null 
+    fi
+    wait ${term_child_pid} 2>/dev/null
+    trap - TERM INT
+    wait ${term_child_pid} 2>/dev/null
+}
 
 function start() {
     echo "Starting DayZ Server"
     cd ${SERVER_DIR}
     
     cp $DZ_STG_CONFIG $DZ_CONFIG
+    rm $DZ_STG_CONFIG
 
+    prep_term
     ./DayZServer \
         -config=${DZ_CONFIG} \
         -port=2302 \
@@ -142,7 +163,8 @@ function start() {
         -adminlog \
         -netlog \
         -freezecheck \
-        ${DZ_EXTRA_ARGS:-}
+        ${DZ_EXTRA_ARGS:-} &
+    wait_term
 }
 
 case "$1" in

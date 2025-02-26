@@ -3,7 +3,7 @@
 set -e
 
 IMAGE=${1:-dayz:dev}
-DOCKERFILE=${3:-.}
+DOCKERFILE=${2:-.}
 
 build() {
     local NAME=$1

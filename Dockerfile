@@ -15,29 +15,28 @@ RUN set -x \
 
 # steam cmd and directory conf
 ENV USER=dayz
-ENV BASE_DIR=/dayz
-ENV HOME=${BASE_DIR}/home
-ENV SERVER_DIR=${BASE_DIR}/server
+ENV HOME=/steam
+ENV SERVER_DIR=/server
 ENV MISSION_DIR=${SERVER_DIR}/mpmissions
+ENV SCRIPTS_DIR=/scripts
 
-# base dirs
-RUN mkdir -p ${BASE_DIR} && \
-    groupadd dayz && \
-    useradd -m -d ${HOME} -s /bin/bash -g dayz ${USER} && \
-    mkdir -p ${SERVER_DIR} ${MISSION_DIR}
+COPY ./server/* /server/
+COPY ./scripts/* /scripts/
+
+# filesystem/user
+RUN mkdir -p ${SERVER_DIR} ${MISSION_DIR} \
+    && groupadd dayz \
+    && useradd -m -d ${HOME} -s /bin/bash -g dayz ${USER}
 
 # permissions
-RUN chown -R ${USER}:dayz ${BASE_DIR} && \
-    chown -R :dayz /usr/bin/steamcmd
+RUN chown -R ${USER}:dayz ${SERVER_DIR} ${HOME} ${SCRIPTS_DIR} \
+    && chown -R :dayz /usr/bin/steamcmd
 
-WORKDIR ${BASE_DIR}
+WORKDIR ${SERVER_DIR}
 USER ${USER}
 
 # update steamcmd & validate user permissions
 RUN steamcmd +quit
-
-COPY entrypoint.sh /dayz/entrypoint.sh
-COPY ./server/* /dayz/server/
 
 # game
 EXPOSE 2302/udp
@@ -52,6 +51,8 @@ EXPOSE 2310
 
 VOLUME ${SERVER_DIR}
 
+STOPSIGNAL SIGTERM
+
 # reset cmd & define entrypoint
 CMD [ "start" ]
-ENTRYPOINT [ "/dayz/entrypoint.sh" ]
+ENTRYPOINT [ "/scripts/entrypoint.sh" ]
