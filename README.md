@@ -43,6 +43,10 @@ Provided is a `docker-compose.template.yml` file as a template that you can copy
 
 Other template configuration files are also provided witin this repo to also help with development.
 
+The template docker compose file contains secrets for `steam_password`, `server_password`, and `admin_password`. These files are ignored by git to keep credentials secure. Creating these files within the directory of the project are needed in order to start the container.
+
+Alternatively you can provide these three items via environment variables to the docker compose file.
+
 ```bash
 docker compose up -d
 ```
