@@ -4,14 +4,17 @@ Docker support for DayZ server. Currently this container only supports vanilla (
 
 ## Work in progress
 
-- [ ] Mod Support
-- [ ] Graceful Shutdown
-- [ ] Health Check
-- [ ] Monitoring
-- [ ] Custom Missions
-- [ ] Custom Configurations
-- [x] Environment Variable Configuration
-- [x] Vanilla Mission Download (Missing Game License)
+- [ ] ghcr.io publish
+- [ ] hub.docker.com publish
+- [ ] Versioning Methodology
+- [ ] DayZ Mod Support
+- [ ] DayZ Graceful Shutdown
+- [ ] DayZ Health Check
+- [ ] DayZ Monitoring
+- [ ] DayZ Custom Missions
+- [ ] DayZ Custom Configurations
+- [x] DayZ Environment Variable Configuration
+- [x] DayZ Vanilla Mission Download (Missing Game License)
 
 ## Configuration / Environment
 
@@ -34,7 +37,7 @@ There is a provided `./build.sh` script that will build the image locally with t
 If you would like to customize the tag you can run the following command against the build script.
 
 ```bash
-./build.sh [IMAGE_NAME] [VERSION_TAG]
+./build.sh [IMAGE_NAME] [DOCKERFILE]
 ```
 
 ### Running
