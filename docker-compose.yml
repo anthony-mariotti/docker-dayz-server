@@ -1,0 +1,43 @@
+# Develop / Example Docker Compose
+services:
+  server:
+    image: dayz:dev
+    environment:
+      - STEAM_USER=username
+      - STEAM_PASS_FILE=/run/secrets/steam_password
+
+      - DZ_MISSION=dayzOffline.chernarusplus
+      - DZ_NAME=DayZ on Linux Docker
+      - DZ_PASSWORD_FILE=/run/secrets/server_password
+      - DZ_PASSWORD_ADMIN_FILE=/run/secrets/admin_password
+    volumes:
+      - data:/dayz/server
+      # - ./config/serverDZ.docker.cfg:/dayz/server/serverDZ.cfg
+    ports:
+      - 2302:2302/udp
+      - 2303:2303/udp
+      - 2304:2304/udp
+      - 8766:8766/udp
+      - 27016:27016/udp
+      - 2310:2310
+    secrets:
+      - steam_password
+      - server_password
+      - admin_password
+
+    # Development
+    # command: ["update"] # Update Only
+    # or
+    # command: ["-f", "/dev/null"]
+    # entrypoint: ["tail"]
+
+volumes:
+  data: {}
+
+secrets:
+  steam_password:
+    file: ./steam_password
+  server_password:
+    file: ./server_password
+  admin_password:
+    file: ./admin_password
