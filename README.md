@@ -21,7 +21,7 @@ Docker support for DayZ server. Currently this container only supports vanilla (
 ## Configuration / Environment
 
 
-> [!NOTE] Graceful Shutdown
+> [!NOTE]
 > At the moment, `stop_grace_period` should be set greater than `15s`. Vanilla DayZ server takes around 10-15 seconds to cleanup and clear resources which is outside the default docker grace period of 10 seconds before it kills the container.
 
 See: [Environment Variables](ENVIRONMENT.md)
