@@ -8,17 +8,25 @@ Docker support for DayZ server. Currently this container only supports vanilla (
 - [ ] hub.docker.com publish
 - [ ] Versioning Methodology
 - [ ] DayZ Mod Support
-- [ ] DayZ Graceful Shutdown
-- [ ] DayZ Health Check
 - [ ] DayZ Monitoring
+- [ ] DayZ RCON CLI
 - [ ] DayZ Custom Missions
 - [ ] DayZ Custom Configurations
+- [x] DayZ Graceful Shutdown
+	- [ ] DayZ takes greater than `10s` to gracefully shutdown
+- [x] DayZ Health Check
 - [x] DayZ Environment Variable Configuration
 - [x] DayZ Vanilla Mission Download (Missing Game License)
 
 ## Configuration / Environment
 
-See: [ENVIRONMENT](ENVIRONMENT.md)
+
+> [!NOTE] Graceful Shutdown
+> At the moment, `stop_grace_period` should be set greater than `15s`. Vanilla DayZ server takes around 10-15 seconds to cleanup and clear resources which is outside the default docker grace period of 10 seconds before it kills the container.
+
+See: [Environment Variables](ENVIRONMENT.md)
+
+See: [Example Docker Compose](docker-compose.template.yml)
 
 ## Development
 
@@ -29,6 +37,23 @@ Let's get started by setting up your development environment and the requirement
 - Docker
 - Steam Account
 - Git Bash (Windows)
+
+#### System Requirements (Minimum)
+
+CPU
+
+- Intel Dual-Core 2.4 GHz
+- AMD Dual-Core Athlon 2.5 GHz
+
+Memory
+
+- 6 GB
+
+Storage
+
+- 5 GB space on the drive 
+
+See: [Server Requirements - DayZ](https://community.bistudio.com/wiki/DayZ:Server_Requirements)
 
 ### Building
 
