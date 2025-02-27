@@ -10,6 +10,7 @@ RUN set -x \
         curl \
         pv \
         jq \
+        bc \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -19,6 +20,9 @@ ENV HOME=/steam
 ENV SERVER_DIR=/server
 ENV MISSION_DIR=${SERVER_DIR}/mpmissions
 ENV SCRIPTS_DIR=/scripts
+
+# update steamcmd & validate user permissions
+RUN steamcmd +quit
 
 COPY ./server/* /server/
 COPY ./scripts/* /scripts/
@@ -35,9 +39,6 @@ RUN chown -R ${USER}:dayz ${SERVER_DIR} ${HOME} ${SCRIPTS_DIR} \
 WORKDIR ${SERVER_DIR}
 USER ${USER}
 
-# update steamcmd & validate user permissions
-RUN steamcmd +quit
-
 # game
 EXPOSE 2302/udp
 EXPOSE 2303/udp
@@ -51,7 +52,7 @@ EXPOSE 2310
 
 VOLUME ${SERVER_DIR}
 
-STOPSIGNAL SIGTERM
+STOPSIGNAL SIGINT
 
 # reset cmd & define entrypoint
 CMD [ "start" ]

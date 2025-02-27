@@ -118,34 +118,6 @@ function configure() {
         $DZ_TMPL_CONFIG > $DZ_STG_CONFIG
 }
 
-prep_term()
-{
-    unset term_child_pid
-    unset term_kill_needed
-    trap 'handle_term' TERM INT
-}
-
-handle_term()
-{
-    if [ "${term_child_pid}" ]; then
-        echo -e "Gracefully shutting down"
-        kill -TERM "${term_child_pid}" 2>/dev/null
-    else
-        term_kill_needed="yes"
-    fi
-}
-
-wait_term()
-{
-    term_child_pid=$!
-    if [ "${term_kill_needed}" ]; then
-        kill -TERM "${term_child_pid}" 2>/dev/null 
-    fi
-    wait ${term_child_pid} 2>/dev/null
-    trap - TERM INT
-    wait ${term_child_pid} 2>/dev/null
-}
-
 function start() {
     echo "Starting DayZ Server"
     cd ${SERVER_DIR}
@@ -153,8 +125,7 @@ function start() {
     cp $DZ_STG_CONFIG $DZ_CONFIG
     rm $DZ_STG_CONFIG
 
-    prep_term
-    ./DayZServer \
+    exec ./DayZServer \
         -config=${DZ_CONFIG} \
         -port=2302 \
         -BEpath=battleye \
@@ -163,8 +134,7 @@ function start() {
         -adminlog \
         -netlog \
         -freezecheck \
-        ${DZ_EXTRA_ARGS:-} &
-    wait_term
+        ${DZ_EXTRA_ARGS:-}
 }
 
 case "$1" in
