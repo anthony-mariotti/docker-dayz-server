@@ -24,6 +24,12 @@ services:
       - steam_password
       - server_password
       - admin_password
+    stop_grace_period: 30s
+    # healthcheck:
+    #   test: dz-health
+    #   start_period: 1m
+    #   interval: 5s
+    #   retries: 20
 
     # Development
     # command: ["update"] # Update Only

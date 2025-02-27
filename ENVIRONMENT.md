@@ -34,11 +34,17 @@
 | DZ_LOGIN_QUEUE_MAX         |    ❌     | `number`  |              | `500`                       | The maximum number of players that can wait in login queue                                                                                                                                                                                                             |
 | DZ_INSTANCE_ID             |    ❌     | `number`  |              | `1`                         | DayZ server instance id, to identify the number of instances per box and their storage folders with persistence files                                                                                                                                                  |
 | DZ_STORAGE_AUTOFIX         |    ❌     | `boolean` | `TRUE/FALSE` | `TRUE`                      | Checks if the persistence files are corrupted and replaces corrupted ones with empty ones                                                                                                                                                                              |
-| DZ_MISSION                 |    ❌     |           |              | `dayzOffline.chernarusplus` | Mission to load on server startup. `<MissionName>.<TerrainName>`                                                                                                                                                                                                       |
-| DZ_EXTRA_ARGS              |    ❌     |           |              |                             | Extra arguments to add to the DayZ server startup. This environment variable is not affected by supplying your own `serverDZ.cfg` via mounting.                                                                                                                        |
+| DZ_MISSION                 |    ❌     | `string`  |              | `dayzOffline.chernarusplus` | Mission to load on server startup. `<MissionName>.<TerrainName>`                                                                                                                                                                                                       |
+| DZ_EXTRA_ARGS              |    ❌     | `string`  |              |                             | Extra arguments to add to the DayZ server startup. This environment variable is not affected by supplying your own `serverDZ.cfg` via mounting.                                                                                                                        |
 
 ## Modding
 
-| NAME         | REQUIRED | FORMAT | DEFAULT | DESCRIPTION |
-| ------------ | -------- | ------ | ------- | ----------- |
-| DAYZ_MODDING |          |        |         |             |
+| NAME     | REQUIRED | FORMAT | DEFAULT | DESCRIPTION |
+| -------- | -------- | ------ | ------- | ----------- |
+| MOD_LIST |          |        |         |             |
+
+## General
+
+| NAME                | REQUIRED | FORMAT    | DEFAULT | DESCRIPTION                                                                                                                                                                                                                                   |
+| ------------------- | :------: | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DISABLE_HEALTHCHECK |    ❌     | `boolean` | `FALSE` | Some orchestration systems, such as Portainer, don't allow disabling of the default `HEALTHCHECK` declared within this image. For those scenarios, you can force the disabling of healthchecks by setting this environment variable to `TRUE` |

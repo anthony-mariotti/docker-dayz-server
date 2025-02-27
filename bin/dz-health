@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e pipefail
+
+: ${DISABLE_HEALTHCHECK:=false}
+
+if [ ${DISABLE_HEALTHCHECK,,} == "true" ]; then
+    echo "Healthcheck Disabled"
+    exit 0
+else
+    a3sb-cli ping 127.0.0.1 27016 -c 1 | grep -Po "name=(.*)"
+fi

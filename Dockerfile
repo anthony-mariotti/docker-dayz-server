@@ -8,11 +8,11 @@ RUN set -x \
         lib32gcc-s1 \
         ca-certificates \
         curl \
-        pv \
         jq \
-        bc \
     && apt-get autoremove \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && curl -#SfLo /usr/bin/a3sb-cli \
+        https://github.com/WoozyMasta/a2s/releases/latest/download/a3sb-cli-linux-amd64
 
 # steam cmd and directory conf
 ENV USER=dayz
@@ -22,10 +22,11 @@ ENV MISSION_DIR=${SERVER_DIR}/mpmissions
 ENV SCRIPTS_DIR=/scripts
 
 # update steamcmd & validate user permissions
-RUN steamcmd +quit
+# RUN steamcmd +quit
 
 COPY ./server/* /server/
 COPY ./scripts/* /scripts/
+COPY ./bin/* /usr/local/bin/
 
 # filesystem/user
 RUN mkdir -p ${SERVER_DIR} ${MISSION_DIR} \
@@ -34,7 +35,10 @@ RUN mkdir -p ${SERVER_DIR} ${MISSION_DIR} \
 
 # permissions
 RUN chown -R ${USER}:dayz ${SERVER_DIR} ${HOME} ${SCRIPTS_DIR} \
-    && chown -R :dayz /usr/bin/steamcmd
+    && chown -R :dayz \
+        /usr/bin/steamcmd \
+        /usr/bin/a3sb-cli \
+    && chmod 755 /usr/bin/a3sb-cli
 
 WORKDIR ${SERVER_DIR}
 USER ${USER}
@@ -57,3 +61,4 @@ STOPSIGNAL SIGINT
 # reset cmd & define entrypoint
 CMD [ "start" ]
 ENTRYPOINT [ "/scripts/entrypoint.sh" ]
+HEALTHCHECK --start-period=2m --retries=2 --interval=30s CMD dz-health
